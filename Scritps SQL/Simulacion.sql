@@ -4,7 +4,7 @@ DECLARE @xmlData XML;
 SET @xmlData = (
 	SELECT *
 	FROM OPENROWSET(
-		BULK 'C:\Users\deyne\OneDrive\Escritorio\Bases de datos\Proyecto\Segundo Avance\Datos_Tarea3.xml',
+		BULK 'C:\Users\deyne\OneDrive\Escritorio\SQL Proyecto 4\Datos_Tarea3.xml',
 		SINGLE_BLOB)
 	AS xmlData
 	);
@@ -23,6 +23,9 @@ DECLARE @fechaFin DATE;
 
 SELECT @fechaItera	= MIN(F.fecha) FROM @Fechas F;
 SELECT @fechaFin	= MAX(F.fecha) FROM @Fechas F;
+
+SET @fechaItera = '2022-03-10';
+SET @fechaFin = @fechaItera;
 
 --------------------------------------------------------
 -- INICIO DEL WHILE ------------------------------------
@@ -183,8 +186,9 @@ BEGIN
 	-- ******************************************
 	-- *	PROCESO DE MARCAS DE ASISTENCIA		*
 	-- ******************************************
-	DECLARE @min_MarcaAsistencia DATE;
-	DECLARE @max_MarcaAsistencia DATE;
+
+	DECLARE @min_MarcaAsistencia INT;
+	DECLARE @max_MarcaAsistencia INT;
 
 	SELECT @min_MarcaAsistencia = MIN(TA.sec) FROM @TablaAsistencia TA
 	SELECT @max_MarcaAsistencia = MAX(TA.sec) FROM @TablaAsistencia TA
@@ -281,41 +285,12 @@ BEGIN
 				SELECT DxE.IdTipoDeduccion, DxE.IdEmpleado
 				FROM [dbo].[DeduccionXEmpleado] DxE
 				WHERE DxE.IdEmpleado = @ID_Empleado
-
-			DECLARE @min_Deducciones INT;
-			DECLARE @max_Deducciones INT;
-
-			SELECT @min_Deducciones = MIN(DDUM.sec) FROM @DeduccionesDeUnEmpleado DDUM;
-			SELECT @max_Deducciones = MAX(DDUM.sec) FROM @DeduccionesDeUnEmpleado DDUM;
-
-			-- Calcular el total de las deducciones No Obligatorias No Porcentuales
-			SELECT @MontoDeduccion_No_Obligatorio = (@MontoDeduccion_No_Obligatorio + SUM(TD.Valor))
-				FROM @DeduccionesDeUnEmpleado DDUE
-				INNER JOIN [dbo].[TipoDeduccion] TD
-				ON TD.Id = DDUE.IdTipoDeduccion
-				WHERE TD.Porcentual = 0 AND TD.Obligatorio = 0;
-
-			-- Calcular el total de las deducciones Obligatorias No Porcentuales
-			SELECT @MontoDeduccion_No_Obligatorio = SUM(TD.Valor)
-				FROM @DeduccionesDeUnEmpleado DDUE
-				INNER JOIN [dbo].[TipoDeduccion] TD
-				ON TD.Id = DDUE.IdTipoDeduccion
-				WHERE TD.Porcentual = 0 AND TD.Obligatorio = 1;
-
-			-- Obtenemos el Salario Bruto del empleado para aplicarle las deducciones porcentuales
-			SELECT @SalarioBrutoDelEmpleado = PSxE.SalarioBruto
-				FROM [dbo].[PlanillaSemanaXEmpleado] PSxE
-				WHERE PSxE.IdEmpleado = @ID_Empleado AND PSxE.IdSemanaPlanilla = @ID_SemanaPlanilla;
-
-			-- Calcular las deducciones porcentuales
-			WHILE (@min_Deducciones <= @max_Deducciones)
-			BEGIN
-
-				
-
-			END
-
 		END
+
+		-- Obtenemos el salario bruto del empleado
+		SELECT @SalarioBrutoDelEmpleado = PSxE.SalarioBruto
+			FROM [dbo].[PlanillaSemanaXEmpleado] PSxE
+			WHERE PSxE.IdEmpleado = @ID_Empleado AND PSxE.IdSemanaPlanilla = @ID_SemanaPlanilla
 
 		-- Obtenemos el ID de la SemanaPlanillaXEmpleado para generar el movimiento
 		DECLARE @ID_PlanillaSemanaXEmpleado INT;
@@ -344,11 +319,74 @@ BEGIN
 			-- Crear las deducciones necesarias
 			IF (@EsJueves = 1)
 			BEGIN
-				PRINT('Aqui');
 
-				-- Insertar movimientos de deduccion					
+				DECLARE @min_Deducciones INT;
+				DECLARE @max_Deducciones INT;
+				DECLARE @EsObligatoria BIT;
+				DECLARE @EsPorcentual BIT;
+				DECLARE @GradoObligatoriedad INT;
+				DECLARE @ValorDeduccion FLOAT;
+
+				SELECT @min_Deducciones = MIN(DDUE.sec) FROM @DeduccionesDeUnEmpleado DDUE;
+				SELECT @max_Deducciones = MAX(DDUE.sec) FROM @DeduccionesDeUnEmpleado DDUE;
+
+				-- Insertar movimientos de deduccion
+				WHILE(@min_Deducciones <= @max_Deducciones)
+				BEGIN
+					-- Verificamos si es porcentual, obligatoria y obtenemos el valor de la deduccion
+					SELECT  @EsPorcentual   = TD.Porcentual,
+							@EsObligatoria  = TD.Obligatorio,
+							@ValorDeduccion = TD.Valor
+						FROM @DeduccionesDeUnEmpleado DDUE
+						INNER JOIN [dbo].[TipoDeduccion] TD
+						ON TD.Id = DDUE.IdTipoDeduccion
+						WHERE DDUE.sec = @min_Deducciones;
+
+					-- Seteamos el grado de Obligatoriedad(4 o 5) de acuerdo al tipo de movimiento
+					IF (@EsObligatoria = 1)
+					BEGIN
+						SET @GradoObligatoriedad = 4;
+					END
+					ELSE
+					BEGIN
+						SET @GradoObligatoriedad = 5;
+					END
+
+					-- Si es porcentual, calculamos el monto de acuerdo al Salario Bruto
+					IF (@EsPorcentual = 1)
+					BEGIN
+						INSERT INTO [dbo].[MovimientoPlanilla]([Fecha], [Monto], [IdPlanillaSemanaXEmpleado], [IdTipoMovimiento])
+							VALUES(@fechaItera, @SalarioBrutoDelEmpleado * @ValorDeduccion, @ID_PlanillaSemanaXEmpleado, @GradoObligatoriedad)
+					END
+					ELSE
+					BEGIN
+						INSERT INTO [dbo].[MovimientoPlanilla]([Fecha], [Monto], [IdPlanillaSemanaXEmpleado], [IdTipoMovimiento])
+							VALUES(@fechaItera, @ValorDeduccion, @ID_PlanillaSemanaXEmpleado, @GradoObligatoriedad)
+					END
+
+					SET @min_Deducciones = @min_Deducciones + 1;
+				END
+
 				-- Crear instancia en SemanaPlanilla
-				-- Actualizar PlanillaxMesxEmp
+				DECLARE @ID_MesPlanilla INT;
+
+				SELECT @ID_MesPlanilla = MP.Id
+					FROM [dbo].[MesPlanilla] MP
+					WHERE (@fechaItera BETWEEN MP.FechaInicio AND MP.FechaFinal);
+
+				INSERT INTO [dbo].[SemanaPlanilla]([FechaIncio], [FechaFin], [IdMesPlanilla])
+					VALUES(	DATEADD(DAY, 1, @fechaItera),
+							DATEADD(WEEK, 1, @fechaItera),
+							@ID_MesPlanilla);
+			END
+
+			-- Crear instancia de MesPlanilla
+			IF (@EsFinMes = 1)
+			BEGIN
+
+				INSERT INTO [dbo].[MesPlanilla]([FechaInicio], [FechaFinal])
+					VALUES(DATEADD(DAY, 1, @fechaItera),
+						   DATEADD(DAY, -1, DATEADD(MONTH, 1, DATEADD(DAY, 1, @fechaItera))));
 
 			END
 
@@ -364,6 +402,7 @@ BEGIN
 	DELETE @TablaDesasociacion;
 	DELETE @TablaJornadas;
 	DELETE @TablaAsistencia;
+	DELETE [dbo].[NuevosEmpleados];
 
 	SET @fechaItera = DATEADD(DAY, 1, @fechaItera);
 	END TRY
