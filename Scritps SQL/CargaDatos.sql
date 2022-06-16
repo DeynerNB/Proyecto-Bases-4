@@ -34,8 +34,10 @@ INSERT INTO [dbo].[TipoMovimiento]([Id], [Nombre])
 	SELECT  T.Item.value('@Id', 'INT'),
 			T.Item.value('@Nombre', 'VARCHAR(128)')
 	FROM @xmlData.nodes('Datos/Catalogos/TiposDeMovimiento/TipoDeMovimiento') as T(item);
-	SELECT  T.Item.value('@Fecha', 'DATE'),
-			T.Item.value('@Nombre', 'VARCHAR(128)')
+
+INSERT INTO [dbo].[Feriado]([Nombre], [Fecha])
+	SELECT  T.Item.value('@Nombre', 'VARCHAR(128)'),
+			T.Item.value('@Fecha', 'DATE')
 	FROM @xmlData.nodes('Datos/Catalogos/Feriados/Feriado') as T(item);
 
 INSERT INTO [dbo].[TipoDeduccion]([Id], [Nombre], [Obligatorio], [Porcentual], [Valor])
@@ -46,9 +48,7 @@ INSERT INTO [dbo].[TipoDeduccion]([Id], [Nombre], [Obligatorio], [Porcentual], [
 			T.Item.value('@Valor', 'FLOAT')
 	FROM @xmlData.nodes('Datos/Catalogos/Deducciones/TipoDeDeduccion') as T(item);
 
-
-
-
-
-
-
+INSERT INTO [dbo].[MesPlanilla]([FechaInicio], [FechaFinal])
+	VALUES('2022-02-01', '2022-02-28')
+INSERT INTO [dbo].[SemanaPlanilla]([FechaIncio], [FechaFin], [IdMesPlanilla])
+	VALUES('2022-01-28', '2022-02-03', 1)
