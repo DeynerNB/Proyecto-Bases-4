@@ -195,6 +195,12 @@ BEGIN
 		FROM [dbo].[SemanaPlanilla] SP
 		WHERE (@fechaItera BETWEEN SP.FechaIncio AND SP.FechaFin);
 
+	-- Obtenemos el ID de mes
+	DECLARE @ID_MesPlanilla INT;
+	SELECT @ID_MesPlanilla = MP.Id
+		FROM [dbo].[MesPlanilla] MP
+		WHERE (@fechaItera BETWEEN MP.FechaInicio AND MP.FechaFinal);
+
 	DECLARE @EsJueves BIT = 0;
 	DECLARE @EsFinMes BIT = 0;
 
@@ -315,6 +321,14 @@ BEGIN
 				FROM [dbo].[PlanillaSemanaXEmpleado] PSxE
 				WHERE PSxE.IdEmpleado = @ID_Empleado AND PSxE.IdSemanaPlanilla = @ID_SemanaPlanilla
 		END
+		--	*************************************************************************
+		--	*	CREAMOS REGISTRO EN PlanillaMesXEmpleado EN CASO DE NO EXISTIR	*
+		--	*************************************************************************
+		IF (NOT EXISTS(SELECT 1
+							FROM [dbo].[PlanillaMesXEmpleado] PMxE
+							INNER JOIN [dbo].[PlanillaSemanaXEmpleado] PSxE ON PMxE.IdPlanillaSemanaXEmpleado = PSxE.Id
+							INNER JOIN [dbo].[SemanaPlanilla] SP ON PSxE.IdSemanaPlanilla = SP.Id
+							WHERE PMxE.IdMesPlanilla = @ID_MesPlanilla AND PSxE.IdEmpleado = @ID_Empleado))
 
 		-- Obtenemos el ID de la SemanaPlanillaXEmpleado para generar el movimiento
 		DECLARE @ID_PlanillaSemanaXEmpleado INT;
@@ -390,10 +404,12 @@ BEGIN
 				SET @min_Deducciones = @min_Deducciones + 1;
 			END
 		END
-		-- Limpiar la tabla que contiene todas las deducciones de un empleado
-		DELETE @DeduccionesDeUnEmpleado;
+		--COMMIT TRANSACTION t_MovimientoSalario
 
-		-- Actualizar la PlanillaSemanaXEmpleado
+		--	*********************************************
+		--	* Actualizamos la PlanillaSemanaXEmpleado	*
+		--	*********************************************
+
 		DECLARE @MontoBrutoFinal MONEY;
 		DECLARE @MontoDeduccion  MONEY;
 
@@ -415,20 +431,39 @@ BEGIN
 			FROM [dbo].[PlanillaSemanaXEmpleado] PSxE
 			WHERE PSxE.Id = @ID_PlanillaSemanaXEmpleado
 		
+		--	*****************************************
+		--	* Actualizamos la PlanillaMesXEmpleado	*
+		--	*****************************************
 
-		--COMMIT TRANSACTION t_MovimientoSalario
+		IF (@EsJueves = 1)
+		BEGIN
+			-- Obtenemos el salario acumulado esta el momento(En ese mes)
+			DECLARE @ID_PlanillaMesXEmpleado INT;
+			DECLARE @SalarioNetoActual_Mes  MONEY;
+			DECLARE @SalarioBrutoActual_Mes MONEY;
 
+			SELECT	@SalarioBrutoActual_Mes = SUM(PSxE.SalarioBruto),
+					@SalarioNetoActual_Mes  = SUM(PSxE.SalarioNeto)
+				FROM [dbo].[PlanillaSemanaXEmpleado] PSxE
+				INNER JOIN [dbo].[SemanaPlanilla] SP ON PSxE.IdSemanaPlanilla = SP.Id
+				INNER JOIN [dbo].[MesPlanilla] MP ON SP.IdMesPlanilla = @ID_MesPlanilla
+				WHERE PSxE.IdEmpleado = @ID_Empleado;
+
+			-- Actualizamos los montos del mes por cada empleado
+			UPDATE [dbo].[PlanillaMesXEmpleado]
+				SET SalarioNeto  = @SalarioNetoActual_Mes,
+					SalarioTotal = @SalarioBrutoActual_Mes
+				FROM [dbo].[PlanillaMesXEmpleado] PMxE
+				WHERE PMxE.Id = @ID_PlanillaMesXEmpleado
+		END
+
+		-- Limpiar la tabla que contiene todas las deducciones de un empleado
+		DELETE @DeduccionesDeUnEmpleado;
 		SET @min_MarcaAsistencia = @min_MarcaAsistencia + 1;
 	END
 
 	IF (@EsJueves = 1)
 	BEGIN
-		-- Obtenemos el ID de mes
-		DECLARE @ID_MesPlanilla INT;
-
-		SELECT @ID_MesPlanilla = MP.Id
-			FROM [dbo].[MesPlanilla] MP
-			WHERE (@fechaItera BETWEEN MP.FechaInicio AND MP.FechaFinal);
 
 		-- Creamos una nueva instancia de SemanaPlanilla
 		DECLARE @Inicio_ProximaSemana DATE;
