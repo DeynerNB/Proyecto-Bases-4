@@ -321,14 +321,6 @@ BEGIN
 				FROM [dbo].[PlanillaSemanaXEmpleado] PSxE
 				WHERE PSxE.IdEmpleado = @ID_Empleado AND PSxE.IdSemanaPlanilla = @ID_SemanaPlanilla
 		END
-		--	*************************************************************************
-		--	*	CREAMOS REGISTRO EN PlanillaMesXEmpleado EN CASO DE NO EXISTIR	*
-		--	*************************************************************************
-		IF (NOT EXISTS(SELECT 1
-							FROM [dbo].[PlanillaMesXEmpleado] PMxE
-							INNER JOIN [dbo].[PlanillaSemanaXEmpleado] PSxE ON PMxE.IdPlanillaSemanaXEmpleado = PSxE.Id
-							INNER JOIN [dbo].[SemanaPlanilla] SP ON PSxE.IdSemanaPlanilla = SP.Id
-							WHERE PMxE.IdMesPlanilla = @ID_MesPlanilla AND PSxE.IdEmpleado = @ID_Empleado))
 
 		-- Obtenemos el ID de la SemanaPlanillaXEmpleado para generar el movimiento
 		DECLARE @ID_PlanillaSemanaXEmpleado INT;
@@ -337,6 +329,23 @@ BEGIN
 			FROM [dbo].[PlanillaSemanaXEmpleado] PSxE
 			WHERE PSxE.IdSemanaPlanilla = @ID_SemanaPlanilla
 				  AND PSxE.IdEmpleado = @ID_Empleado
+		
+
+		--	*************************************************************************
+		--	*	CREAMOS REGISTRO EN PlanillaMesXEmpleado EN CASO DE NO EXISTIR	*
+		--	*************************************************************************
+		IF (NOT EXISTS(SELECT 1
+							FROM [dbo].[PlanillaMesXEmpleado] PMxE
+							INNER JOIN [dbo].[PlanillaSemanaXEmpleado] PSxE ON PMxE.IdPlanillaSemanaXEmpleado = PSxE.Id
+							INNER JOIN [dbo].[SemanaPlanilla] SP ON PSxE.IdSemanaPlanilla = SP.Id
+							WHERE PMxE.IdMesPlanilla = @ID_MesPlanilla AND PSxE.IdEmpleado = @ID_Empleado))
+		BEGIN
+			INSERT INTO [dbo].[PlanillaMesXEmpleado]([SalarioNeto],
+													 [SalarioTotal],
+													 [IdMesPlanilla],
+													 [IdPlanillaSemanaXEmpleado])
+			VALUES(0, 0, @ID_MesPlanilla, @ID_PlanillaSemanaXEmpleado)
+		END
 
 		-- Transaccion para movimiento de PlanillaSemanaXEmpleado
 		-- 1. Credito Horas ordinarias
