@@ -129,6 +129,10 @@ BEGIN
 
 	BEGIN TRANSACTION t_PRUEBA_SIMULACION;
 
+	-- ******************************************
+	-- *	ACTUALIZACION DE TABLAS FISICAS		*
+	-- ******************************************
+
 	-- Eliminar empleados nuevos repetidos
 	DELETE @TablaInsercion
 		FROM @TablaInsercion TI
@@ -205,20 +209,17 @@ BEGIN
 	DECLARE @EsJueves BIT = 0;
 	DECLARE @EsFinMes BIT = 0;
 
-	--> Verificar si es jueves o fin de mes
+	-- Verificar si la proxima semana es cambio de mes
+	DECLARE @FechaFin_ProximaSemana DATE = @fechaItera;
+
+	-- Verificar si es jueves
 	IF (EXISTS(SELECT 1 FROM [dbo].[SemanaPlanilla] SP WHERE SP.FechaFin = @fechaItera))
 	BEGIN
 		SET @EsJueves = 1;
+		SET @FechaFin_ProximaSemana = DATEADD(WEEK, 1, @fechaItera);
 	END
 
-	DECLARE @FechaFin_SemanaActual DATE;
-	SELECT @FechaFin_SemanaActual = SP.FechaFin
-		FROM [dbo].[SemanaPlanilla] SP
-		WHERE SP.Id = @ID_SemanaPlanilla;
-
-	IF (NOT EXISTS(SELECT 1
-					FROM [dbo].[MesPlanilla] MP
-					WHERE (@FechaFin_SemanaActual BETWEEN MP.FechaInicio AND MP.FechaFinal)))
+	IF (NOT EXISTS(SELECT 1 FROM [dbo].[MesPlanilla] MP WHERE (@FechaFin_ProximaSemana BETWEEN MP.FechaInicio AND MP.FechaFinal)))
 	BEGIN
 		SET @EsFinMes = 1;
 	END
@@ -226,13 +227,19 @@ BEGIN
 	-- Crear instancia de MesPlanilla
 	IF (@EsFinMes = 1)
 	BEGIN
+		DECLARE @FechaFin_MesActual DATE;
+		SELECT @FechaFin_MesActual = MP.FechaFinal
+			FROM [dbo].[MesPlanilla] MP
+			WHERE MP.Id = @ID_MesPlanilla;
+
 		INSERT INTO [dbo].[MesPlanilla]([FechaInicio], [FechaFinal])
-			VALUES(DATEADD(DAY, 1, @fechaItera),
-				   DATEADD(DAY, -1, DATEADD(MONTH, 1, DATEADD(DAY, 1, @fechaItera))));
+			VALUES(DATEADD(DAY, 1, @FechaFin_MesActual),
+				   DATEADD(DAY, -1, DATEADD(MONTH, 1, DATEADD(DAY, 1, @FechaFin_MesActual))));
 	END
 	-- Creamos una nueva instancia de SemanaPlanilla
 	IF (@EsJueves = 1)
 	BEGIN
+
 		DECLARE @Inicio_ProximaSemana DATE;
 		DECLARE @Fin_ProximaSemana	  DATE;
 		SET @Inicio_ProximaSemana = DATEADD(DAY, 1, @fechaItera);
@@ -242,7 +249,9 @@ BEGIN
 		DECLARE @ID_MesFinProximaSemana INT;
 		SELECT @ID_MesFinProximaSemana = MP.Id
 			FROM [dbo].[MesPlanilla] MP
-			WHERE (@fechaItera BETWEEN MP.FechaInicio AND MP.FechaFinal);
+			WHERE (@Fin_ProximaSemana BETWEEN MP.FechaInicio AND MP.FechaFinal);
+
+		SET @ID_MesFinProximaSemana = ISNULL(@ID_MesFinProximaSemana, @ID_MesPlanilla + 1);
 
 		INSERT INTO [dbo].[SemanaPlanilla]([FechaIncio], [FechaFin], [IdMesPlanilla])
 			VALUES(	@Inicio_ProximaSemana,
@@ -261,11 +270,6 @@ BEGIN
 			INNER JOIN [dbo].[Empleado] E
 			ON E.ValorDocumentoIdentidad = TJ.ValorDocumento
 	END
-
-	PRINT('Jueves value:');
-	print(@EsJueves);
-	PRINT('Fin Mes:');
-	print(@EsFinMes);
 
 	DECLARE @min_MarcaAsistencia INT;
 	DECLARE @max_MarcaAsistencia INT;
