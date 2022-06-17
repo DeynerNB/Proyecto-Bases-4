@@ -51,8 +51,5 @@ INSERT INTO [dbo].[TipoDeduccion]([Id], [Nombre], [Obligatorio], [Porcentual], [
 INSERT INTO [dbo].[MesPlanilla]([FechaInicio], [FechaFinal])
 	VALUES('2022-02-01', '2022-02-28')
 
-
-
-
 INSERT INTO [dbo].[SemanaPlanilla]([FechaIncio], [FechaFin], [IdMesPlanilla])
 	VALUES('2022-01-28', '2022-02-03', 1)

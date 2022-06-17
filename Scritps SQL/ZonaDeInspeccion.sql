@@ -1,5 +1,7 @@
+USE Proyecto4_BasePruebas_5
 
-SELECT ErrorLine, ErrorMessage FROM DBErrors
+
+SELECT * FROM DBErrors
 
 SELECT * FROM Usuario
 SELECT * FROM Empleado
@@ -13,8 +15,9 @@ SELECT * FROM MovimientoPlanilla
 SELECT * FROM SemanaPlanilla
 SELECT * FROM MesPlanilla
 SELECT * FROM PlanillaSemanaXEmpleado
-SELECT * FROM PlanillaMesXEmpleado WHERE IdEmpleado = 2
+SELECT * FROM PlanillaMesXEmpleado
 
-DELETE
-FROM [dbo].[MesPlanilla]
-WHERE Id = 2
+
+
+
+

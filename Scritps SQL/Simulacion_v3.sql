@@ -24,9 +24,11 @@ DECLARE @fechaFin DATE;
 SELECT @fechaItera	= MIN(F.fecha) FROM @Fechas F;
 SELECT @fechaFin	= MAX(F.fecha) FROM @Fechas F;
 
--- NO HE PROBADO EL 03-03
-SET @fechaItera = '2022-03-03';
-SET @fechaFin = @fechaItera;
+--SET @fechaItera = '2022-02-04';
+--SET @fechaFin = @fechaItera;
+
+
+
 
 
 --------------------------------------------------------
@@ -130,6 +132,7 @@ BEGIN
 
 	BEGIN TRANSACTION t_PRUEBA_SIMULACION;
 
+
 	-- ******************************************
 	-- *	ACTUALIZACION DE TABLAS FISICAS		*
 	-- ******************************************
@@ -195,18 +198,6 @@ BEGIN
 	-- ******************************************
 	-- *	PROCESO DE MARCAS DE ASISTENCIA		*
 	-- ******************************************
-	-- Obtenemos el Id de la Semana actual
-	DECLARE @ID_SemanaPlanilla INT;
-	SELECT @ID_SemanaPlanilla = SP.Id
-		FROM [dbo].[SemanaPlanilla] SP
-		WHERE (@fechaItera BETWEEN SP.FechaIncio AND SP.FechaFin);
-
-	-- Obtenemos el ID de mes
-	DECLARE @ID_MesPlanilla INT;
-	SELECT @ID_MesPlanilla = MP.Id
-		FROM [dbo].[MesPlanilla] MP
-		WHERE (@fechaItera BETWEEN MP.FechaInicio AND MP.FechaFinal);
-
 	DECLARE @EsJueves BIT = 0;
 	DECLARE @EsFinMes BIT = 0;
 
@@ -219,11 +210,23 @@ BEGIN
 		SET @EsJueves = 1;
 		SET @FechaFin_ProximaSemana = DATEADD(WEEK, 1, @fechaItera);
 	END
-
+	-- Verificar si es fin de mes
 	IF (NOT EXISTS(SELECT 1 FROM [dbo].[MesPlanilla] MP WHERE (@FechaFin_ProximaSemana BETWEEN MP.FechaInicio AND MP.FechaFinal)))
 	BEGIN
 		SET @EsFinMes = 1;
 	END
+
+	-- Obtenemos el Id de la Semana actual
+	DECLARE @ID_SemanaPlanilla INT;
+	SELECT @ID_SemanaPlanilla = SP.Id
+		FROM [dbo].[SemanaPlanilla] SP
+		WHERE (@fechaItera BETWEEN SP.FechaIncio AND SP.FechaFin);
+
+	-- Obtenemos el ID de mes del jueves de la semana actual
+	DECLARE @ID_MesPlanilla INT;
+	SELECT @ID_MesPlanilla = MP.Id
+		FROM [dbo].[MesPlanilla] MP
+		WHERE (@FechaFin_ProximaSemana BETWEEN MP.FechaInicio AND MP.FechaFinal);
 
 	-- Crear instancia de MesPlanilla
 	IF (@EsFinMes = 1)
@@ -252,7 +255,6 @@ BEGIN
 			FROM [dbo].[MesPlanilla] MP
 			WHERE (@Fin_ProximaSemana BETWEEN MP.FechaInicio AND MP.FechaFinal);
 
-		SET @ID_MesFinProximaSemana = ISNULL(@ID_MesFinProximaSemana, @ID_MesPlanilla + 1);
 
 		INSERT INTO [dbo].[SemanaPlanilla]([FechaIncio], [FechaFin], [IdMesPlanilla])
 			VALUES(	@Inicio_ProximaSemana,
@@ -272,6 +274,11 @@ BEGIN
 			ON E.ValorDocumentoIdentidad = TJ.ValorDocumento
 	END
 
+
+
+
+
+
 	DECLARE @min_MarcaAsistencia INT;
 	DECLARE @max_MarcaAsistencia INT;
 
@@ -280,6 +287,7 @@ BEGIN
 
 	WHILE (@min_MarcaAsistencia <= @max_MarcaAsistencia)
 	BEGIN
+
 		-- Obtenemos los datos de una marca de asistencia
 		DECLARE @IdentidadEmpleado INT;
 		DECLARE @horaEntrada TIME(0);
@@ -341,44 +349,43 @@ BEGIN
 			SET @montoGanado_Extras	= @jornada_SalarioXHora * @horasExtras * 2.0;
 		END
 
-		--	*************************************************************************
-		--	*	CREAMOS REGISTRO EN PlanillaMesXEmpleado EN CASO DE NO EXISTIR	*
-		--	*************************************************************************
-		IF (NOT EXISTS(SELECT 1
-							FROM [dbo].[PlanillaMesXEmpleado] PMxE
-							WHERE PMxE.IdEmpleado = @ID_Empleado AND
-								  PMxE.IdMesPlanilla = @ID_MesPlanilla))
-		BEGIN
-			PRINT('Se creo un registro mensual del empleado:');
-			PRINT(@ID_Empleado);
-			INSERT INTO [dbo].[PlanillaMesXEmpleado]([SalarioNeto], [SalarioTotal], [IdMesPlanilla], [IdEmpleado])
-			VALUES(0, 0, @ID_MesPlanilla, @ID_Empleado)
-		END
 
 		--	*************************************************************************
-		--	*	CREAMOS REGISTRO EN SemanaPlanillaXEmpleado EN CASO DE NO EXISTIR	*
+		--	*	CREAMOS REGISTRO EN PlanillaMesXEmpleado para X empleado	*
 		--	*************************************************************************
-		
+
+		DECLARE @TEMP_JuevesSemanaActual DATE;
+		DECLARE @TEMP_ID_MesJuevesSemanaActual INT;
+		SELECT @TEMP_JuevesSemanaActual = SP.FechaFin
+			FROM [dbo].[SemanaPlanilla] SP
+			WHERE SP.Id = @ID_SemanaPlanilla;
+		SELECT @TEMP_ID_MesJuevesSemanaActual = MP.Id
+			FROM [dbo].[MesPlanilla] MP
+			WHERE (@TEMP_JuevesSemanaActual BETWEEN MP.FechaInicio AND MP.FechaFinal)
+
+		IF (NOT EXISTS(SELECT 1 FROM [dbo].[PlanillaMesXEmpleado] PMxE WHERE PMxE.IdMesPlanilla = @TEMP_ID_MesJuevesSemanaActual AND PMxE.IdEmpleado = @ID_Empleado))
+		BEGIN
+			INSERT INTO [dbo].[PlanillaMesXEmpleado]([SalarioNeto], [SalarioTotal], [IdMesPlanilla], [IdEmpleado])
+				SELECT 0, 0, @TEMP_ID_MesJuevesSemanaActual, E.Id
+				FROM [dbo].[Empleado] E
+				WHERE E.Borrado = 0 AND E.Id = @ID_Empleado
+		END
+
+		--	*****************************************************************************
+		--	*	CREAMOS REGISTRO EN SemanaPlanillaXEmpleado para X empleado	*
+		--	*****************************************************************************
 		-- Obtenemos el SalarioBruto para aplicar deducciones
 		DECLARE @SalarioBrutoDelEmpleado MONEY;
 
-		IF (NOT EXISTS(SELECT 1 
-							FROM [dbo].[PlanillaSemanaXEmpleado] PSxE
-							WHERE PSxE.IdEmpleado = @ID_Empleado AND PSxE.IdSemanaPlanilla = @ID_SemanaPlanilla))
+		IF (NOT EXISTS(SELECT 1 FROM [dbo].[PlanillaSemanaXEmpleado] PSxE WHERE PSxE.IdSemanaPlanilla = @ID_SemanaPlanilla AND PSxE.IdEmpleado = @ID_Empleado))
 		BEGIN
 			SET @SalarioBrutoDelEmpleado = @montoGanado_Ordinarias + @montoGanado_Extras;
 
-			-- Obtenemos el ID de PlanillaMesXEmpleado
-			DECLARE @ID_PlanillaMensualXEmpleado INT;
-			SELECT @ID_PlanillaMensualXEmpleado = PMxE.Id
-				FROM [dbo].[PlanillaMesXEmpleado] PMxE
-				WHERE PMxE.IdEmpleado = @ID_Empleado AND
-					  PMxE.IdMesPlanilla = @ID_MesPlanilla
-
 			INSERT INTO [dbo].[PlanillaSemanaXEmpleado]([SalarioNeto], [SalarioBruto], [IdEmpleado], [IdSemanaPlanilla], [IdPlanillaMesXEmpleado])
-			VALUES(@SalarioBrutoDelEmpleado, @SalarioBrutoDelEmpleado, @ID_Empleado, @ID_SemanaPlanilla, @ID_PlanillaMensualXEmpleado);
+				SELECT 0, 0, PMxE.IdEmpleado, @ID_SemanaPlanilla, PMxE.ID
+				FROM [dbo].[PlanillaMesXEmpleado] PMxE
+				WHERE PMxE.IdMesPlanilla = @TEMP_ID_MesJuevesSemanaActual AND PMxE.IdEmpleado = @ID_Empleado
 		END
-
 		ELSE
 		BEGIN
 			SELECT @SalarioBrutoDelEmpleado = PSxE.SalarioBruto
@@ -394,16 +401,15 @@ BEGIN
 			WHERE PSxE.IdSemanaPlanilla = @ID_SemanaPlanilla
 				  AND PSxE.IdEmpleado = @ID_Empleado
 	
-		-- Transaccion para movimiento de PlanillaSemanaXEmpleado
-		-- 1. Credito Horas ordinarias
-		-- 2. Credito Horas Extra Normales
-		-- 3. Credito Horas Extra Dobles
-		-- 4. Debito Deducciones de Ley
-		-- 5. Debito Deduccion No Obligatoria
+
+
+
+		--	*****************************************************************************
+		--	*	SECCION DONDE SE GENERAN LOS MOVIMIENTOS	*
+		--	*****************************************************************************
 
 		--BEGIN TRANSACTION t_MovimientoSalario
-		-- Insercion de monto ordinario
-
+		
 		INSERT INTO [dbo].[MovimientoPlanilla]([Fecha], [Monto], [IdPlanillaSemanaXEmpleado], [IdTipoMovimiento])
 			VALUES(@fechaItera, @montoGanado_Ordinarias, @ID_PlanillaSemanaXEmpleado, 1)
 		-- Insercion de monto extra
@@ -473,6 +479,7 @@ BEGIN
 		END
 		--COMMIT TRANSACTION t_MovimientoSalario
 
+
 		--	*********************************************
 		--	* Actualizamos la PlanillaSemanaXEmpleado	*
 		--	*********************************************
@@ -523,8 +530,7 @@ BEGIN
 			SELECT	@SalarioBrutoActual_Mes = SUM(PSxE.SalarioBruto),
 					@SalarioNetoActual_Mes  = SUM(PSxE.SalarioNeto)
 				FROM [dbo].[PlanillaSemanaXEmpleado] PSxE
-				WHERE PSxE.IdEmpleado = @ID_Empleado AND
-					  PSxE.IdPlanillaMesXEmpleado = @ID_PlanillaMesXEmpleado;
+				WHERE PSxE.IdPlanillaMesXEmpleado = @ID_PlanillaMesXEmpleado;
 
 			-- Actualizamos los montos del mes por cada empleado
 			UPDATE [dbo].[PlanillaMesXEmpleado]
@@ -537,9 +543,8 @@ BEGIN
 		-- Limpiar la tabla que contiene todas las deducciones de un empleado
 		DELETE @DeduccionesDeUnEmpleado;
 		SET @min_MarcaAsistencia = @min_MarcaAsistencia + 1;
+
 	END
-
-
 
 	COMMIT TRANSACTION t_PRUEBA_SIMULACION
 
