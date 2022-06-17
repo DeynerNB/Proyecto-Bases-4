@@ -8,10 +8,11 @@ BEGIN
 	BEGIN TRY
 
 		-- Obtenemos las deducciones Obligatorias
-		DECLARE @tablaDeduccionesObligatorias TABLE(sec INT IDENTITY(1, 1), ID_Deduccion INT);
+		DECLARE @tablaDeduccionesObligatorias TABLE(sec INT IDENTITY(1, 1), ID_Deduccion INT, Valor FLOAT);
 
 		INSERT INTO @tablaDeduccionesObligatorias
-			SELECT TD.Id
+			SELECT TD.Id,
+				   TD.Valor
 			FROM [dbo].[TipoDeduccion] TD
 			WHERE TD.Obligatorio = 1;
 
@@ -36,6 +37,7 @@ BEGIN
 			DECLARE @min_Deduccion INT;
 			DECLARE @max_Deduccion INT;
 			DECLARE @IdDeduccion INT;
+			DECLARE @ValorDeduccion FLOAT;
 
 			SELECT @min_Deduccion = MIN(tDO.sec) FROM @tablaDeduccionesObligatorias tDO;
 			SELECT @max_Deduccion = MAX(tDO.sec) FROM @tablaDeduccionesObligatorias tDO;
@@ -43,13 +45,14 @@ BEGIN
 			WHILE (@min_Deduccion <= @max_Deduccion)
 			BEGIN
 				-- Obtenemos el ID de la deduccion
-				SELECT @IdDeduccion = tDO.ID_Deduccion
+				SELECT @IdDeduccion = tDO.ID_Deduccion,
+					   @ValorDeduccion = tDO.Valor
 					FROM @tablaDeduccionesObligatorias tDO
 					WHERE tDO.sec = @min_Deduccion
 				
 				-- Asociamos el nuevo empleado con la deduccion obligatoria
-				INSERT INTO [dbo].[DeduccionXEmpleado]([IdTipoDeduccion], [IdEmpleado])
-					VALUES(@IdDeduccion, @IdEmpleado);
+				INSERT INTO [dbo].[DeduccionXEmpleado]([IdTipoDeduccion], [IdEmpleado], [Valor])
+					VALUES(@IdDeduccion, @IdEmpleado, @ValorDeduccion);
 
 				SET @min_Deduccion = @min_Deduccion + 1;
 			END

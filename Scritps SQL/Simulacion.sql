@@ -24,9 +24,9 @@ DECLARE @fechaFin DATE;
 SELECT @fechaItera	= MIN(F.fecha) FROM @Fechas F;
 SELECT @fechaFin	= MAX(F.fecha) FROM @Fechas F;
 
--- 02-12 NO LA HE CORRIDO
-SET @fechaItera = '2022-02-12';
-SET @fechaFin = @fechaItera;
+SET @fechaItera = '2022-02-03';
+SET @fechaFin = '2022-02-24';
+--SET @fechaFin = @fechaItera;
 
 --------------------------------------------------------
 -- INICIO DEL WHILE ------------------------------------
@@ -127,7 +127,8 @@ BEGIN
 	PRINT('  ');
 	---------------------------------------------------------------
 
-	BEGIN TRANSACTION t_PRUEBA_SIMULACION
+	BEGIN TRANSACTION t_PRUEBA_SIMULACION;
+
 	-- Eliminar empleados nuevos repetidos
 	DELETE @TablaInsercion
 		FROM @TablaInsercion TI
@@ -173,7 +174,7 @@ BEGIN
 
 	-- Asociar empleados con deducciones NO obligatorias
 	INSERT INTO [dbo].[DeduccionXEmpleado]
-		SELECT TA.IdTipoDeduccion, E.Id
+		SELECT TA.IdTipoDeduccion, E.Id, TA.Monto
 		FROM @TablaAsociacion TA
 		INNER JOIN [dbo].[Empleado] E
 		ON E.ValorDocumentoIdentidad = TA.ValorDocumento;
@@ -212,6 +213,47 @@ BEGIN
 	IF (EXISTS(SELECT 1 FROM [dbo].[MesPlanilla] MP WHERE MP.FechaFinal = @fechaItera))
 	BEGIN
 		SET @EsFinMes = 1;
+	END
+
+	-- Crear instancia de MesPlanilla
+	IF (@EsFinMes = 1)
+	BEGIN
+
+		INSERT INTO [dbo].[MesPlanilla]([FechaInicio], [FechaFinal])
+			VALUES(DATEADD(DAY, 1, @fechaItera),
+				   DATEADD(DAY, -1, DATEADD(MONTH, 1, DATEADD(DAY, 1, @fechaItera))));
+
+	END
+	-- Creamos una nueva instancia de SemanaPlanilla
+	IF (@EsJueves = 1)
+	BEGIN
+		DECLARE @Inicio_ProximaSemana DATE;
+		DECLARE @Fin_ProximaSemana	  DATE;
+		SET @Inicio_ProximaSemana = DATEADD(DAY, 1, @fechaItera);
+		SET @Fin_ProximaSemana	  = DATEADD(WEEK , 1, @fechaItera);
+
+		-- Obtenemos el ID del mes del @Fin_ProximaSemana
+		DECLARE @ID_MesFinProximaSemana INT;
+		SELECT @ID_MesFinProximaSemana = MP.Id
+			FROM [dbo].[MesPlanilla] MP
+			WHERE (@Fin_ProximaSemana BETWEEN MP.FechaInicio AND MP.FechaFinal);
+
+		INSERT INTO [dbo].[SemanaPlanilla]([FechaIncio], [FechaFin], [IdMesPlanilla])
+			VALUES(	@Inicio_ProximaSemana,
+					@Fin_ProximaSemana,
+					@ID_MesFinProximaSemana);
+
+		DECLARE @ID_ProximaSemana INT;
+		SELECT @ID_ProximaSemana = SP.Id
+			FROM [dbo].[SemanaPlanilla] SP
+			WHERE ((DATEADD(DAY, 1, @fechaItera)) BETWEEN SP.FechaIncio AND SP.FechaFin);
+
+		-- Creamos las jornadas de la siguiente semana
+		INSERT INTO [dbo].[Jornada]([IdTipoJornada], [IdEmpleado], [IdSemanaPlanilla])
+			SELECT TJ.IdTipoJornada, E.Id, @ID_ProximaSemana
+			FROM @TablaJornadas TJ
+			INNER JOIN [dbo].[Empleado] E
+			ON E.ValorDocumentoIdentidad = TJ.ValorDocumento
 	END
 
 	PRINT('Jueves value:');
@@ -288,23 +330,13 @@ BEGIN
 			SET @montoGanado_Extras	= @jornada_SalarioXHora * @horasExtras * 2.0;
 		END
 
-		-- Calculo de deducciones (Si es jueves, guardamos las deducciones que se deben aplicar a tal empleado)
-		DECLARE @DeduccionesDeUnEmpleado TABLE(sec INT IDENTITY(1, 1), IdTipoDeduccion INT, IdEmpleado INT);
-		DECLARE @SalarioBrutoDelEmpleado MONEY;
-		
-		IF (@EsJueves = 1)
-		BEGIN
-			-- Obtenemos el total de las deducciones que le corresponden a ese empleado
-			INSERT INTO @DeduccionesDeUnEmpleado
-				SELECT DxE.IdTipoDeduccion, DxE.IdEmpleado
-				FROM [dbo].[DeduccionXEmpleado] DxE
-				WHERE DxE.IdEmpleado = @ID_Empleado
-		END
-		
 		--	*************************************************************************
 		--	*	CREAMOS REGISTRO EN SemanaPlanillaXEmpleado EN CASO DE NO EXISTIR	*
 		--	*************************************************************************
+		
 		-- Obtenemos el SalarioBruto para aplicar deducciones
+		DECLARE @SalarioBrutoDelEmpleado MONEY;
+
 		IF (NOT EXISTS(SELECT 1 
 							FROM [dbo].[PlanillaSemanaXEmpleado] PSxE
 							WHERE PSxE.IdEmpleado = @ID_Empleado AND PSxE.IdSemanaPlanilla = @ID_SemanaPlanilla))
@@ -336,10 +368,11 @@ BEGIN
 		--	*************************************************************************
 		IF (NOT EXISTS(SELECT 1
 							FROM [dbo].[PlanillaMesXEmpleado] PMxE
-							INNER JOIN [dbo].[PlanillaSemanaXEmpleado] PSxE ON PMxE.IdPlanillaSemanaXEmpleado = PSxE.Id
-							INNER JOIN [dbo].[SemanaPlanilla] SP ON PSxE.IdSemanaPlanilla = SP.Id
-							WHERE PMxE.IdMesPlanilla = @ID_MesPlanilla AND PSxE.IdEmpleado = @ID_Empleado))
+							WHERE PMxE.IdPlanillaSemanaXEmpleado = @ID_PlanillaSemanaXEmpleado AND
+								  PMxE.IdMesPlanilla = @ID_MesPlanilla))
 		BEGIN
+			PRINT('Se creo un registro mensual del empleado:');
+			PRINT(@ID_Empleado);
 			INSERT INTO [dbo].[PlanillaMesXEmpleado]([SalarioNeto],
 													 [SalarioTotal],
 													 [IdMesPlanilla],
@@ -356,6 +389,7 @@ BEGIN
 
 		--BEGIN TRANSACTION t_MovimientoSalario
 		-- Insercion de monto ordinario
+
 		INSERT INTO [dbo].[MovimientoPlanilla]([Fecha], [Monto], [IdPlanillaSemanaXEmpleado], [IdTipoMovimiento])
 			VALUES(@fechaItera, @montoGanado_Ordinarias, @ID_PlanillaSemanaXEmpleado, 1)
 		-- Insercion de monto extra
@@ -365,6 +399,15 @@ BEGIN
 		-- Crear las deducciones necesarias
 		IF (@EsJueves = 1)
 		BEGIN
+
+			-- Calculo de deducciones (Si es jueves, guardamos las deducciones que se deben aplicar a tal empleado)
+			DECLARE @DeduccionesDeUnEmpleado TABLE(sec INT IDENTITY(1, 1), IdTipoDeduccion INT, IdEmpleado INT, valor FLOAT);
+
+			-- Obtenemos el total de las deducciones que le corresponden a ese empleado
+			INSERT INTO @DeduccionesDeUnEmpleado
+				SELECT DxE.IdTipoDeduccion, DxE.IdEmpleado, DxE.Valor
+				FROM [dbo].[DeduccionXEmpleado] DxE
+				WHERE DxE.IdEmpleado = @ID_Empleado
 
 			DECLARE @min_Deducciones INT;
 			DECLARE @max_Deducciones INT;
@@ -382,7 +425,7 @@ BEGIN
 				-- Verificamos si es porcentual, obligatoria y obtenemos el valor de la deduccion
 				SELECT  @EsPorcentual   = TD.Porcentual,
 						@EsObligatoria  = TD.Obligatorio,
-						@ValorDeduccion = TD.Valor
+						@ValorDeduccion = DDUE.Valor
 					FROM @DeduccionesDeUnEmpleado DDUE
 					INNER JOIN [dbo].[TipoDeduccion] TD
 					ON TD.Id = DDUE.IdTipoDeduccion
@@ -404,6 +447,7 @@ BEGIN
 					INSERT INTO [dbo].[MovimientoPlanilla]([Fecha], [Monto], [IdPlanillaSemanaXEmpleado], [IdTipoMovimiento])
 						VALUES(@fechaItera, @SalarioBrutoDelEmpleado * @ValorDeduccion, @ID_PlanillaSemanaXEmpleado, @GradoObligatoriedad)
 				END
+				-- Si no es porcentual, guardamos en el movimiento, el monto a restar
 				ELSE
 				BEGIN
 					INSERT INTO [dbo].[MovimientoPlanilla]([Fecha], [Monto], [IdPlanillaSemanaXEmpleado], [IdTipoMovimiento])
@@ -446,7 +490,10 @@ BEGIN
 
 		IF (@EsJueves = 1)
 		BEGIN
-			-- Obtenemos el salario acumulado esta el momento(En ese mes)
+			PRINT('Se actualizo la planilla mes del empleado:');
+			PRINT(@ID_Empleado);
+
+			-- Obtenemos el salario acumulado hasta el momento(En ese mes)
 			DECLARE @ID_PlanillaMesXEmpleado INT;
 			DECLARE @SalarioNetoActual_Mes  MONEY;
 			DECLARE @SalarioBrutoActual_Mes MONEY;
@@ -457,6 +504,10 @@ BEGIN
 				INNER JOIN [dbo].[SemanaPlanilla] SP ON PSxE.IdSemanaPlanilla = SP.Id
 				INNER JOIN [dbo].[MesPlanilla] MP ON SP.IdMesPlanilla = @ID_MesPlanilla
 				WHERE PSxE.IdEmpleado = @ID_Empleado;
+
+			SELECT @ID_PlanillaMesXEmpleado = PMxE.Id
+				FROM [dbo].[PlanillaMesXEmpleado] PMxE
+				WHERE PMxE.IdPlanillaSemanaXEmpleado = @ID_PlanillaSemanaXEmpleado
 
 			-- Actualizamos los montos del mes por cada empleado
 			UPDATE [dbo].[PlanillaMesXEmpleado]
@@ -471,42 +522,7 @@ BEGIN
 		SET @min_MarcaAsistencia = @min_MarcaAsistencia + 1;
 	END
 
-	IF (@EsJueves = 1)
-	BEGIN
 
-		-- Creamos una nueva instancia de SemanaPlanilla
-		DECLARE @Inicio_ProximaSemana DATE;
-		DECLARE @Fin_ProximaSemana	  DATE;
-		SET @Inicio_ProximaSemana = DATEADD(DAY, 1, @fechaItera);
-		SET @Fin_ProximaSemana	  = DATEADD(WEEK , 1, @fechaItera);
-		
-		INSERT INTO [dbo].[SemanaPlanilla]([FechaIncio], [FechaFin], [IdMesPlanilla])
-			VALUES(	@Inicio_ProximaSemana,
-					@Fin_ProximaSemana,
-					@ID_MesPlanilla);
-
-		DECLARE @ID_ProximaSemana INT;
-		SELECT @ID_ProximaSemana = SP.Id
-			FROM [dbo].[SemanaPlanilla] SP
-			WHERE ((DATEADD(DAY, 1, @fechaItera)) BETWEEN SP.FechaIncio AND SP.FechaFin);
-
-		-- Creamos las jornadas de la siguiente semana
-		INSERT INTO [dbo].[Jornada]([IdTipoJornada], [IdEmpleado], [IdSemanaPlanilla])
-			SELECT TJ.IdTipoJornada, E.Id, @ID_ProximaSemana
-			FROM @TablaJornadas TJ
-			INNER JOIN [dbo].[Empleado] E
-			ON E.ValorDocumentoIdentidad = TJ.ValorDocumento
-	END
-
-	-- Crear instancia de MesPlanilla
-	IF (@EsFinMes = 1)
-	BEGIN
-
-		INSERT INTO [dbo].[MesPlanilla]([FechaInicio], [FechaFinal])
-			VALUES(DATEADD(DAY, 1, @fechaItera),
-				   DATEADD(DAY, -1, DATEADD(MONTH, 1, DATEADD(DAY, 1, @fechaItera))));
-
-	END
 
 	COMMIT TRANSACTION t_PRUEBA_SIMULACION
 
