@@ -1,10 +1,24 @@
-CREATE OR ALTER TRIGGER AsociacionesObligatorias
-						ON [dbo].[NuevosEmpleados]
-						AFTER INSERT
-AS
+--====================================
+--  Create database trigger template 
+--====================================
+USE Proyecto4_PruebaPersonal
+GO
+
+IF EXISTS(
+  SELECT *
+    FROM sys.triggers
+   WHERE name = N'AsociacionesObligatorias'
+     AND parent_class_desc = N'DATABASE'
+)
+	DROP TRIGGER AsociacionesObligatorias ON DATABASE
+GO
+
+CREATE TRIGGER AsociacionesObligatorias
+	ON [dbo].[NuevosEmpleados]
+	AFTER INSERT
+AS 
 BEGIN
-	
-	BEGIN TRY
+   	BEGIN TRY
 
 		-- Obtenemos las deducciones Obligatorias
 		DECLARE @tablaDeduccionesObligatorias TABLE(sec INT IDENTITY(1, 1), ID_Deduccion INT, Valor FLOAT);
@@ -64,3 +78,6 @@ BEGIN
 		PRINT('ERROR EN EL TRIGGER');
 	END CATCH
 END
+GO
+
+

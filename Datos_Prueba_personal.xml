@@ -1,0 +1,363 @@
+<Datos>
+    <Catalogos>
+
+        <Puestos>
+            <Puesto Id="1" Nombre="Electrecista" SalarioXHora="1200"/>
+            <Puesto Id="2" Nombre="Auxiliar de Laboratorio" SalarioXHora="2000"/>
+            <Puesto Id="3" Nombre="Operador de Maquina" SalarioXHora="1250"/>
+            <Puesto Id="4" Nombre="Soporte Tecnico" SalarioXHora="2500"/>
+            <Puesto Id="5" Nombre="Contabilidad" SalarioXHora="2200"/>
+            <Puesto Id="6" Nombre="Tesoreria" SalarioXHora="1300"/>
+            <Puesto Id="7" Nombre="Cuentas por Cobrar" SalarioXHora="1500"/>
+            <Puesto Id="8" Nombre="Importacions y Exportaciones" SalarioXHora="2100"/>
+            <Puesto Id="9" Nombre="Auxiliar de Materiales" SalarioXHora="1000"/>
+            <Puesto Id="10" Nombre="Lider de produccion" SalarioXHora="1800"/>
+            <Puesto Id="11" Nombre="Asistente de produccion" SalarioXHora="1200"/>
+        </Puestos>
+
+
+        <Departamentos>
+            <Departamento Id="1" Nombre="Enlaminado"/>
+            <Departamento Id="2" Nombre="Laboratorio"/>
+            <Departamento Id="3" Nombre="Bodega de Materiales"/>
+            <Departamento Id="4" Nombre="Embotellamiento"/>
+            <Departamento Id="5" Nombre="Empacado"/>
+            <Departamento Id="6" Nombre="Distribucion"/>
+            <Departamento Id="7" Nombre="Ventas"/>
+        </Departamentos>  
+
+
+        <Tipos_de_Documento_de_Identificacion>
+            <TipoIdDoc Id="1" Nombre="Identidy Card" />
+            <TipoIdDoc Id="2" Nombre="Passport" />
+        </Tipos_de_Documento_de_Identificacion>
+
+        <TiposDeJornada>
+            <TipoDeJornada HoraEntrada="8:00 am" HoraSalida="4:00 pm" Id="1" Nombre="Diurna" />
+            <TipoDeJornada HoraEntrada="4:00 pm" HoraSalida="11:00 pm" Id="2" Nombre="Vespertina" />
+            <TipoDeJornada HoraEntrada="12:00 am" HoraSalida="6:00 am" Id="3" Nombre="Nocturna" />
+        </TiposDeJornada>
+
+        <TiposDeMovimiento>
+            <TipoDeMovimiento Id="1" Nombre="Credito Horas ordinarias" />
+            <TipoDeMovimiento Id="2" Nombre="Credito Horas Extra Normales" />
+            <TipoDeMovimiento Id="3" Nombre="Credito Horas Extra Dobles" />
+            <TipoDeMovimiento Id="4" Nombre="Debito Deducciones de Ley" />
+            <TipoDeMovimiento Id="5" Nombre="Debito Deduccion No Obligatoria" />
+
+        </TiposDeMovimiento>
+
+        <Feriados>
+            <Feriado Fecha="2022-05-01" Nombre="Dia del Trabajador" />
+            <Feriado Fecha="2022-08-15" Nombre="Dia de la Madre" />
+            <Feriado Fecha="2022-12-25" Nombre="Navidad" />
+            <Feriado Fecha="2022-01-01" Nombre="Anno Nuevo" />
+            <Feriado Fecha="2022-04-11" Nombre="Juan Santamaria" />
+            <Feriado Fecha="2022-04-14" Nombre="Juan Santo" />
+            <Feriado Fecha="2022-04-15" Nombre="Viernes Santo" />
+        </Feriados>
+
+        <Deducciones>
+            <TipoDeDeduccion Id="1" Nombre="Obligatorio de Ley" Obligatorio="Si" Porcentual="Si" Valor="0.095" />
+            <TipoDeDeduccion Id="2" Nombre="Ahorro Asociacion Solidarista" Obligatorio="No" Porcentual="Si" Valor="0.05" />
+            <TipoDeDeduccion Id="3" Nombre="Ahorro Vacacional" Obligatorio="No" Porcentual="No" Valor="0" />
+            <TipoDeDeduccion Id="4" Nombre="Pension Alimenticia" Obligatorio="No" Porcentual="No" Valor="0" />
+        </Deducciones>
+    </Catalogos>
+
+    <Usuarios>
+        <Usuario pwd="1234" tipo="1" username="Goku" />
+        <Usuario pwd="1234" tipo="1" username="Willy" />
+    </Usuarios>
+
+    <!-- JUEVES -->
+    <Operacion Fecha="2022-02-03">
+        <NuevoEmpleado FechaNacimiento="1964-04-13" Nombre="Alicia Perez Vidal" Password="7663" Username="APerez" ValorDocumentoIdentidad="55502591" idDepartamento="3" idPuesto="10" idTipoDocumentacionIdentidad="1" />
+        <TipoDeJornadaProximaSemana IdJornada="2" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-02-04">
+        <MarcaDeAsistencia FechaEntrada="2022-02-04 03:40 PM" FechaSalida="2022-02-04 11:33 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-02-05">
+        <MarcaDeAsistencia FechaEntrada="2022-02-05 04:19 PM" FechaSalida="2022-02-05 11:48 PM" ValorDocumentoIdentidad="55502591" />
+        <AsociaEmpleadoConDeduccion IdDeduccion="2" Monto="0.05" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-02-06">
+        <MarcaDeAsistencia FechaEntrada="2022-02-06 04:13 PM" FechaSalida="2022-02-06 11:34 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-02-07">
+        <MarcaDeAsistencia FechaEntrada="2022-02-07 04:21 PM" FechaSalida="2022-02-07 11:35 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-02-08">
+        <MarcaDeAsistencia FechaEntrada="2022-02-08 04:03 PM" FechaSalida="2022-02-08 11:14 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-02-09">
+        <MarcaDeAsistencia FechaEntrada="2022-02-09 03:55 PM" FechaSalida="2022-02-09 11:24 PM" ValorDocumentoIdentidad="55502591" />
+        <AsociaEmpleadoConDeduccion IdDeduccion="4" Monto="10000" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <!-- JUEVES -->
+    <Operacion Fecha="2022-02-10">
+        <MarcaDeAsistencia FechaEntrada="2022-02-10 03:44 PM" FechaSalida="2022-02-10 11:58 PM" ValorDocumentoIdentidad="55502591" />
+        <TipoDeJornadaProximaSemana IdJornada="1" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-02-11">
+        <MarcaDeAsistencia FechaEntrada="2022-02-11 07:31 AM" FechaSalida="2022-02-11 06:33 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-02-12">
+        <MarcaDeAsistencia FechaEntrada="2022-02-12 08:03 AM" FechaSalida="2022-02-12 06:32 PM" ValorDocumentoIdentidad="55502591" />
+        <DesasociaEmpleadoConDeduccion IdDeduccion="2" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-02-13">
+        <MarcaDeAsistencia FechaEntrada="2022-02-13 08:13 AM" FechaSalida="2022-02-13 06:29 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-02-14">
+        <MarcaDeAsistencia FechaEntrada="2022-02-14 07:42 AM" FechaSalida="2022-02-14 06:57 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-02-15">
+        <MarcaDeAsistencia FechaEntrada="2022-02-15 07:57 AM" FechaSalida="2022-02-15 06:22 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-02-16">
+        <MarcaDeAsistencia FechaEntrada="2022-02-16 07:56 AM" FechaSalida="2022-02-16 06:22 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <!-- JUEVES -->
+    <Operacion Fecha="2022-02-17">
+        <MarcaDeAsistencia FechaEntrada="2022-02-17 08:07 AM" FechaSalida="2022-02-17 04:18 PM" ValorDocumentoIdentidad="55502591" />
+        <TipoDeJornadaProximaSemana IdJornada="2" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-02-18">
+        <MarcaDeAsistencia FechaEntrada="2022-02-18 03:52 PM" FechaSalida="2022-02-18 11:20 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-02-19">
+        <MarcaDeAsistencia FechaEntrada="2022-02-19 03:54 PM" FechaSalida="2022-02-19 11:42 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-02-20">
+        <MarcaDeAsistencia FechaEntrada="2022-02-20 04:03 PM" FechaSalida="2022-02-20 11:49 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-02-21">
+        <MarcaDeAsistencia FechaEntrada="2022-02-21 03:40 PM" FechaSalida="2022-02-21 11:09 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-02-22">
+        <MarcaDeAsistencia FechaEntrada="2022-02-22 03:41 PM" FechaSalida="2022-02-22 11:13 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-02-23">
+        <MarcaDeAsistencia FechaEntrada="2022-02-23 03:53 PM" FechaSalida="2022-02-23 11:01 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <!-- JUEVES -->
+    <Operacion Fecha="2022-02-24">
+        <MarcaDeAsistencia FechaEntrada="2022-02-24 03:46 PM" FechaSalida="2022-02-24 11:28 PM" ValorDocumentoIdentidad="55502591" />
+        <TipoDeJornadaProximaSemana IdJornada="3" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-02-25">
+        <MarcaDeAsistencia FechaEntrada="2022-02-25 12:12 AM" FechaSalida="2022-02-25 06:05 AM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-02-26">
+        <MarcaDeAsistencia FechaEntrada="2022-02-26 12:24 AM" FechaSalida="2022-02-26 07:21 AM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-02-27">
+        <MarcaDeAsistencia FechaEntrada="2022-02-27 12:09 AM" FechaSalida="2022-02-27 06:54 AM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-02-28">
+        <MarcaDeAsistencia FechaEntrada="2022-02-28 12:12 AM" FechaSalida="2022-02-28 06:05 AM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-03-01">
+        <MarcaDeAsistencia FechaEntrada="2022-03-01 12:17 AM" FechaSalida="2022-03-01 08:10 AM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-03-02">
+        <MarcaDeAsistencia FechaEntrada="2022-03-02 12:12 AM" FechaSalida="2022-03-02 06:04 AM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <!-- JUEVES -->
+    <Operacion Fecha="2022-03-03">
+        <MarcaDeAsistencia FechaEntrada="2022-03-03 12:16 AM" FechaSalida="2022-03-03 07:09 AM" ValorDocumentoIdentidad="55502591" />
+        <TipoDeJornadaProximaSemana IdJornada="2" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-03-04">
+        <MarcaDeAsistencia FechaEntrada="2022-03-04 03:56 PM" FechaSalida="2022-03-04 11:24 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-03-05">
+        <MarcaDeAsistencia FechaEntrada="2022-03-05 04:19 PM" FechaSalida="2022-03-05 11:40 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-03-06">
+        <MarcaDeAsistencia FechaEntrada="2022-03-06 04:05 PM" FechaSalida="2022-03-06 11:46 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-03-07">
+        <MarcaDeAsistencia FechaEntrada="2022-03-07 03:58 PM" FechaSalida="2022-03-07 11:24 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-03-08">
+        <MarcaDeAsistencia FechaEntrada="2022-03-08 03:56 PM" FechaSalida="2022-03-08 11:24 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-03-09">
+        <MarcaDeAsistencia FechaEntrada="2022-03-09 03:46 PM" FechaSalida="2022-03-09 11:37 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <!-- JUEVES -->
+    <Operacion Fecha="2022-03-10">
+        <MarcaDeAsistencia FechaEntrada="2022-03-10 04:08 PM" FechaSalida="2022-03-10 11:35 PM" ValorDocumentoIdentidad="55502591" />
+        <TipoDeJornadaProximaSemana IdJornada="3" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-03-11">
+        <MarcaDeAsistencia FechaEntrada="2022-03-11 12:01 AM" FechaSalida="2022-03-11 07:41 AM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-03-12">
+        <MarcaDeAsistencia FechaEntrada="2022-03-12 12:12 AM" FechaSalida="2022-03-12 06:53 AM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-03-13">
+        <MarcaDeAsistencia FechaEntrada="2022-03-13 12:17 AM" FechaSalida="2022-03-13 08:25 AM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-03-14">
+        <MarcaDeAsistencia FechaEntrada="2022-03-14 12:25 AM" FechaSalida="2022-03-14 07:16 AM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-03-15">
+        <MarcaDeAsistencia FechaEntrada="2022-03-15 12:12 AM" FechaSalida="2022-03-15 08:49 AM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-03-16">
+        <MarcaDeAsistencia FechaEntrada="2022-03-16 12:20 AM" FechaSalida="2022-03-16 07:46 AM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <!-- JUEVES -->
+    <Operacion Fecha="2022-03-17">
+        <MarcaDeAsistencia FechaEntrada="2022-03-17 12:19 AM" FechaSalida="2022-03-17 07:36 AM" ValorDocumentoIdentidad="55502591" />
+        <TipoDeJornadaProximaSemana IdJornada="1" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-03-18">
+        <MarcaDeAsistencia FechaEntrada="2022-03-18 07:38 AM" FechaSalida="2022-03-18 05:32 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-03-19">
+        <MarcaDeAsistencia FechaEntrada="2022-03-19 07:41 AM" FechaSalida="2022-03-19 06:08 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-03-20">
+        <MarcaDeAsistencia FechaEntrada="2022-03-20 07:56 AM" FechaSalida="2022-03-20 04:59 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-03-21">
+        <MarcaDeAsistencia FechaEntrada="2022-03-21 07:35 AM" FechaSalida="2022-03-21 05:15 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-03-22">
+        <MarcaDeAsistencia FechaEntrada="2022-03-22 08:03 AM" FechaSalida="2022-03-22 05:52 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-03-23">
+        <MarcaDeAsistencia FechaEntrada="2022-03-23 07:54 AM" FechaSalida="2022-03-23 04:42 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <!-- JUEVES -->
+    <Operacion Fecha="2022-03-24">
+        <MarcaDeAsistencia FechaEntrada="2022-03-24 08:00 AM" FechaSalida="2022-03-24 04:00 PM" ValorDocumentoIdentidad="55502591" />
+        <TipoDeJornadaProximaSemana IdJornada="2" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-03-25">
+        <MarcaDeAsistencia FechaEntrada="2022-03-25 03:25 PM" FechaSalida="2022-03-25 11:49 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-03-26">
+        <MarcaDeAsistencia FechaEntrada="2022-03-26 03:30 PM" FechaSalida="2022-03-26 11:49 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-03-27">
+        <MarcaDeAsistencia FechaEntrada="2022-03-27 04:12 PM" FechaSalida="2022-03-27 11:49 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-03-28">
+        <MarcaDeAsistencia FechaEntrada="2022-03-28 03:44 PM" FechaSalida="2022-03-28 11:24 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-03-29">
+        <MarcaDeAsistencia FechaEntrada="2022-03-29 03:41 PM" FechaSalida="2022-03-29 11:39 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-03-30">
+        <MarcaDeAsistencia FechaEntrada="2022-03-30 04:19 PM" FechaSalida="2022-03-30 11:05 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <!-- JUEVES -->
+    <Operacion Fecha="2022-03-31">
+        <MarcaDeAsistencia FechaEntrada="2022-03-31 03:33 PM" FechaSalida="2022-03-31 11:07 PM" ValorDocumentoIdentidad="55502591" />
+        <TipoDeJornadaProximaSemana IdJornada="3" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-04-01">
+        <MarcaDeAsistencia FechaEntrada="2022-04-01 04:12 PM" FechaSalida="2022-04-01 11:18 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-04-02">
+        <MarcaDeAsistencia FechaEntrada="2022-04-02 12:20 AM" FechaSalida="2022-04-02 06:23 AM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-04-03">
+        <MarcaDeAsistencia FechaEntrada="2022-04-03 12:28 AM" FechaSalida="2022-04-03 06:49 AM" ValorDocumentoIdentidad="55502591" />
+        <AsociaEmpleadoConDeduccion IdDeduccion="4" Monto="20000" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-04-04">
+        <MarcaDeAsistencia FechaEntrada="2022-04-04 12:14 AM" FechaSalida="2022-04-04 07:32 AM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-04-05">
+        <MarcaDeAsistencia FechaEntrada="2022-04-05 12:10 AM" FechaSalida="2022-04-05 07:08 AM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-04-06">
+        <MarcaDeAsistencia FechaEntrada="2022-04-06 12:15 AM" FechaSalida="2022-04-06 08:25 AM" ValorDocumentoIdentidad="55502591" />
+        <AsociaEmpleadoConDeduccion IdDeduccion="3" Monto="10000" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <!-- JUEVES -->
+    <Operacion Fecha="2022-04-07">
+        <MarcaDeAsistencia FechaEntrada="2022-04-07 12:14 AM" FechaSalida="2022-04-07 08:14 AM" ValorDocumentoIdentidad="55502591" />
+        <TipoDeJornadaProximaSemana IdJornada="1" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-04-08">
+        <MarcaDeAsistencia FechaEntrada="2022-04-08 07:49 AM" FechaSalida="2022-04-08 05:47 PM" ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+    <Operacion Fecha="2022-04-09">
+        <MarcaDeAsistencia FechaEntrada="2022-04-09 07:54 AM" FechaSalida="2022-04-09 06:27 PM" ValorDocumentoIdentidad="55502591" />
+        <EliminarEmpleado ValorDocumentoIdentidad="55502591" />
+    </Operacion>
+
+</Datos>

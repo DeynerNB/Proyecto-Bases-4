@@ -1,8 +1,8 @@
-USE Proyecto4_BasePruebas_5
 
 
 SELECT * FROM DBErrors
 
+SELECT * FROM Puesto
 SELECT * FROM Usuario
 SELECT * FROM Empleado
 SELECT * FROM SemanaPlanilla

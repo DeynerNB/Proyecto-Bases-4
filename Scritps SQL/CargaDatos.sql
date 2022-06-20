@@ -2,7 +2,7 @@ DECLARE @xmlData XML;
 SET @xmlData = (
 	SELECT *
 	FROM OPENROWSET(
-		BULK 'C:\Users\deyne\OneDrive\Escritorio\SQL Proyecto 4\Datos_Tarea3.xml',
+		BULK 'C:\Users\deyne\OneDrive\Escritorio\SQL Proyecto 4\Datos_Prueba_personal.xml',
 		SINGLE_BLOB)
 	AS xmlData
 	);

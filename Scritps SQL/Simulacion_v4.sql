@@ -184,13 +184,12 @@ BEGIN
 		INNER JOIN [dbo].[Empleado] E
 		ON E.ValorDocumentoIdentidad = TA.ValorDocumento;
 
-	-- Desasociar empleados las deducciones
+	-- Desasociar las deducciones de los empleados
 	DELETE [dbo].[DeduccionXEmpleado]
 		FROM [dbo].[DeduccionXEmpleado] DxE
-		INNER JOIN @TablaDesasociacion TD
-		INNER JOIN [dbo].[Empleado] E
-		ON E.ValorDocumentoIdentidad = TD.ValorDocumento
-		ON DxE.IdEmpleado = E.Id;
+		INNER JOIN [dbo].[Empleado] E ON DxE.IdEmpleado = E.Id
+		INNER JOIN @TablaDesasociacion TD ON E.Id = TD.ValorDocumento
+		WHERE DxE.IdTipoDeduccion = TD.IdTipoDeduccion;
 
 	-- ******************************************
 	-- *	PROCESO DE MARCAS DE ASISTENCIA		*
@@ -213,6 +212,19 @@ BEGIN
 		SET @EsFinMes = 1;
 	END
 
+	-- Crear instancia de MesPlanilla
+	IF (@EsFinMes = 1)
+	BEGIN
+		DECLARE @FechaFin_MesActual DATE;
+		SELECT @FechaFin_MesActual = MP.FechaFinal
+			FROM [dbo].[MesPlanilla] MP
+			WHERE (@fechaItera BETWEEN MP.FechaInicio AND MP.FechaFinal);
+
+		INSERT INTO [dbo].[MesPlanilla]([FechaInicio], [FechaFinal])
+			VALUES(DATEADD(DAY, 1, @FechaFin_MesActual),
+				   DATEADD(DAY, -1, DATEADD(MONTH, 1, DATEADD(DAY, 1, @FechaFin_MesActual))));
+	END
+
 	-- Obtenemos el Id de la Semana actual
 	DECLARE @ID_SemanaPlanilla INT;
 	SELECT @ID_SemanaPlanilla = SP.Id
@@ -225,18 +237,6 @@ BEGIN
 		FROM [dbo].[MesPlanilla] MP
 		WHERE (@FechaFin_ProximaSemana BETWEEN MP.FechaInicio AND MP.FechaFinal);
 
-	-- Crear instancia de MesPlanilla
-	IF (@EsFinMes = 1)
-	BEGIN
-		DECLARE @FechaFin_MesActual DATE;
-		SELECT @FechaFin_MesActual = MP.FechaFinal
-			FROM [dbo].[MesPlanilla] MP
-			WHERE MP.Id = @ID_MesPlanilla;
-
-		INSERT INTO [dbo].[MesPlanilla]([FechaInicio], [FechaFinal])
-			VALUES(DATEADD(DAY, 1, @FechaFin_MesActual),
-				   DATEADD(DAY, -1, DATEADD(MONTH, 1, DATEADD(DAY, 1, @FechaFin_MesActual))));
-	END
 	-- Creamos una nueva instancia de SemanaPlanilla
 	IF (@EsJueves = 1)
 	BEGIN
@@ -458,6 +458,7 @@ BEGIN
 			DECLARE @DEBUG_numDeducciones INT;
 			SELECT @DEBUG_numDeducciones = COUNT(*)
 				FROM @DeduccionesDeUnEmpleado DDUE;
+			PRINT(@DEBUG_numDeducciones);
 
 			-- Insertar movimientos de deduccion
 			WHILE(@min_Deducciones <= @max_Deducciones)
