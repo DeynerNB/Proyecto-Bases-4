@@ -511,9 +511,6 @@ BEGIN
 
 		IF (@EsJueves = 1)
 		BEGIN
-			PRINT('Se actualizo la planilla mes del empleado:');
-			PRINT(@ID_Empleado);
-
 			-- Obtenemos el salario acumulado hasta el momento(En ese mes)
 			DECLARE @ID_PlanillaMesXEmpleado INT;
 			DECLARE @SalarioNetoActual_Mes  MONEY;
@@ -524,8 +521,10 @@ BEGIN
 				WHERE PMxE.IdMesPlanilla = @ID_MesPlanilla AND
 					  PMxE.IdEmpleado = @ID_Empleado;
 
-			PRINT('Id de planilla mes x empleado');
-			PRINT(@ID_PlanillaMesXEmpleado);
+			-- Actualizamos el DeduccionesXEmpleadoXMes
+			INSERT INTO [dbo].[DeduccionesXEmpleadoXMes]([Id], [TotalDeduccion], [IdPlanillaMesXEmpleado], [IdTipoDeduccion])
+				SELECT @MontoDeduccion, @ID_PlanillaMesXEmpleado, DDUE.IdTipoDeduccion
+				FROM @DeduccionesDeUnEmpleado DDUE
 
 			SELECT	@SalarioBrutoActual_Mes = SUM(PSxE.SalarioBruto),
 					@SalarioNetoActual_Mes  = SUM(PSxE.SalarioNeto)
