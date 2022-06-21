@@ -2,7 +2,7 @@ DECLARE @xmlData XML;
 SET @xmlData = (
 	SELECT *
 	FROM OPENROWSET(
-		BULK 'C:\Users\deyne\OneDrive\Escritorio\SQL Proyecto 4\Datos_Prueba_personal.xml',
+		BULK 'C:\Users\deyne\OneDrive\Escritorio\SQL Proyecto 4\Datos_Tarea3.xml',
 		SINGLE_BLOB)
 	AS xmlData
 	);
@@ -53,3 +53,4 @@ INSERT INTO [dbo].[MesPlanilla]([FechaInicio], [FechaFinal])
 
 INSERT INTO [dbo].[SemanaPlanilla]([FechaIncio], [FechaFin], [IdMesPlanilla])
 	VALUES('2022-01-28', '2022-02-03', 1)
+
