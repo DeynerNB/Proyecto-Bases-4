@@ -8,7 +8,7 @@ SELECT * FROM Empleado
 SELECT * FROM SemanaPlanilla
 SELECT * FROM MesPlanilla
 SELECT * FROM Jornada
-SELECT * FROM DeduccionXEmpleado
+SELECT * FROM DeduccionXEmpleado DxE WHERE DxE.IdEmpleado = 2
 SELECT * FROM DeduccionesXEmpleadoXMes
 SELECT * FROM TipoDeduccion
 SELECT * FROM MovimientoPlanilla

@@ -1,0 +1,212 @@
+body {
+	margin: 0;
+	font-family: 'Fredoka', sans-serif;
+	user-select: none;
+}
+.mainContainer-header {
+	width: 100%;
+	height: 7vw;
+	background: #2cce95;
+
+	display: flex;
+	align-items: center;
+}
+
+.nav-Menu {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+
+	display: flex;
+	flex-grow: 1;
+
+	height: 100%;
+	align-items: center;
+}
+
+#nav-Options {
+	float: left;
+	text-align: center;
+
+	width: 100%;
+	height: 100%;
+	font-size: 20px;
+}
+#nav-Options:hover {
+	background: #27b080;
+}
+#nav-Options a {
+	text-decoration: none;
+	color: #ffffff;
+}
+
+.optionContainer {
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	transition: all 0.2s;
+}
+.optionContainer div {
+	padding: 10px;
+}
+.optionContainer:active {
+	transform: scale(0.9);
+	background: #1a7052;
+}
+
+.dataContainer {
+	display: flex;
+	justify-content: center;
+
+	font-size: 20px;
+}
+.tableContainer {
+	margin-top: 50px;
+	width: 50%;
+}
+
+.titleHeadTable {
+	display: flex;
+}
+.headTable {
+	height: 50px;
+	background: #2cce95;
+	font-size: 20;
+	width: 100%;
+	
+	align-items: center;
+	justify-content: center;
+	
+	border-left: solid 2px #ffffff;
+}
+.contentTable, .headTable {
+	display: flex;
+	flex-grow: 1;
+}
+.contentTable {
+	border-bottom: solid 2px #2cce95;
+	cursor: pointer;
+}
+.contentTable:active {
+	background: #efefef;
+}
+.dataJobTable {
+	cursor: default;
+	border-left: solid 2px #2cce95;
+}
+
+.selectList_Container {
+	display: flex;
+	flex-grow: 1;
+}
+.dataContainer {
+	display: flex;
+	flex-grow: 1;
+	flex-direction: column;
+	box-sizing: content-box;
+	padding: 20px;
+}
+.dataContainer label{
+	width: 50%;
+	text-align: left;
+}
+.dataContainer input[type="date"]{
+	width: 100%;
+}
+.selectList_Container select {
+	margin-left: 10px;
+}
+
+#selectedJob_LabelGeneral, #selectedJob_Label {
+	text-align: left;
+	width: 30%;
+}
+#selectedJob_Label {
+	width: 100%;
+}
+#listJobs {
+	height: 25px;
+	width: 100%;
+	font-size: 17px;
+	border-radius: 5px;
+
+	background: #2bb182;
+	color: #ffffff;
+
+	outline: none;
+	border: none;
+	transition: all 0.25s;
+}
+#listJobs:active {
+	transform: scale(0.98);
+}
+
+#mainTable {
+	width: 100%;
+	border-collapse: separate;
+}
+#tableTittleContainer {
+	text-align: center;
+	background: #2cce95;
+	font-size: 25px;
+	padding: 10px 0px;
+	margin: 0 2px;
+	margin-bottom: 5px;
+}
+
+.contentRowTable {
+	display: inline;
+	flex-grow: 1;
+	max-width: 186.42px;
+	word-wrap: break-word;
+	text-align: center;
+
+	padding: 5px;
+}
+.specialRow {
+	max-width: 100%;
+}
+
+#extraInformation_Container {
+	position: fixed;
+	display: none;
+	flex-grow: 1;
+
+	width: 70%;
+	height: fit-content;
+
+	top: 100px;
+	left: 0;
+	right: 0;
+	margin: 0 auto;
+
+	border-radius: 10px;
+	box-shadow: 0 0 10px #000;
+	background: #6fedc0;
+}
+.extraInformation {
+	width: 100%;
+}
+.extraInformation h4 {
+	text-align: center;
+}
+.extraInformation ul {
+	padding: 0;
+}
+.extraInformation ul li {
+	display: block;
+	text-align: center;
+}
+.close {
+	position: relative;
+	margin: 5px;
+	height: 24px;
+	transition: color 0.15s;
+}
+.close:hover {
+	color: #fff;
+}
+

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+	<link rel="stylesheet" type="text/css" href="style.css">
+
+	<title>Plantilla Obrero Patrono</title>
+</head>
+<body>
+
+	<!-- Navigation Bar Header -->
+	<header class="headerContainer">
+		<div class="mainContainer-header">
+			<ul class="nav-Menu">
+				<li id="nav-Options"><a href="\list?mode=listarPlanillaSemanal"><div class="optionContainer"><div>Listar Planilla Semanal</div></div></a></li>
+				<li id="nav-Options"><a href="\list?mode=listarPlanillaMensual"><div class="optionContainer"><div>Listar Planilla Mensual</div></div></a></li>
+			</ul>
+		</div>
+	</header>
+
+	<!-- List section - Data Section -->
+	<section class="sectionDataContainer">
+		<div class="dataContainer" data-url="/data">
+
+		</div>
+	</section>
+
+	<div id="extraInformation_Container">
+		<div class="extraInformation">
+			<h4>Salario Bruto</h4>
+			<ul>
+				<li>Primer elemento</li>
+				<li>Segundo elemento</li>
+				<li>Tercero elemento</li>
+				<li>Cuarto elemento</li>
+			</ul>
+		</div>
+		<div class="extraInformation">
+			<h4>Deducciones</h4>
+			<ul>
+				<li>Primer elemento</li>
+				<li>Segundo elemento</li>
+				<li>Tercero elemento</li>
+				<li>Cuarto elemento</li>
+			</ul>
+		</div>
+		<i class="material-icons close" onclick="closePopUp()">close</i>
+
+	</div>
+
+
+	<script type="text/javascript" src="source.js"></script>
+</body>
+</html>

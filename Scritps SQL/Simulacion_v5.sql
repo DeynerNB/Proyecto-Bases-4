@@ -24,7 +24,7 @@ DECLARE @fechaFin DATE;
 SELECT @fechaItera	= MIN(F.fecha) FROM @Fechas F;
 SELECT @fechaFin	= MAX(F.fecha) FROM @Fechas F;
 
---SET @fechaItera = '2022-02-10';
+--SET @fechaItera = '2022-02-06';
 --SET @fechaFin = @fechaItera;
 --SET @fechaFin = '2022-03-02';
 
@@ -127,7 +127,6 @@ BEGIN
 	PRINT('Tabla Jornada: ' + CONVERT(VARCHAR(32), @numJornada));
 	PRINT('  ');
 	---------------------------------------------------------------
-
 	--BEGIN TRANSACTION t_PRUEBA_SIMULACION;
 
 
@@ -277,9 +276,12 @@ BEGIN
 
 	-- Obtenemos el domingo de la semana actual
 	DECLARE @domingo_SemanaActual DATE;
-	SELECT @domingo_SemanaActual = DATEADD(DAY, 3, SP.FechaFin)
+	SELECT @domingo_SemanaActual = DATEADD(DAY, 2, SP.FechaIncio)
 		FROM [dbo].[SemanaPlanilla] SP
 		WHERE SP.Id = @ID_SemanaPlanilla;
+
+	PRINT('Domingo de la semana');
+	PRINT(@domingo_SemanaActual);
 
 	-- ******************************************
 	-- *	PROCESO DE MARCAS DE ASISTENCIA		*
@@ -369,27 +371,39 @@ BEGIN
 
 		-- Calculamos las horas trabajadas (Normales y Extras)
 		DECLARE @horasNormales INT;
-		DECLARE @horasExtras   INT;
+		DECLARE @horasExtrasNormales INT;
+		DECLARE @horasExtrasDobles INT;
 
 		SET @horasNormales = DATEDIFF(HOUR, @horaEntrada, @jornada_HoraSalida);
-		SET @horasExtras   = DATEDIFF(HOUR, @jornada_HoraSalida, @horaSalida);
+		SET @horasExtrasNormales = DATEDIFF(HOUR, @jornada_HoraSalida, @horaSalida);
+		SET @horasExtrasDobles = 0;
 
-		IF (@horasExtras < 0)
+		-- Si manana es domingo AND la fecha de entrada y de salida son diferentes, se crea las horas extras dobles
+		IF (DATEADD(DAY, 1, @fechaItera) = @domingo_SemanaActual AND DATEPART(DAY, @Entrada_Completa) != DATEPART(DAY, @Salida_Completa))
 		BEGIN
-			SET @horasExtras = 0;
+			SET @horasExtrasNormales = DATEDIFF(HOUR, @jornada_HoraSalida, '23:59:59');
+			SET @horasExtrasDobles	 = DATEDIFF(HOUR, '00:00:00', @horaSalida);
+		END
+
+		IF (@horasExtrasNormales < 0)
+		BEGIN
+			SET @horasExtrasNormales = 0;
 		END
 
 		-- Calculamos el monto ganado
 		DECLARE @montoGanado_Ordinarias MONEY;
-		DECLARE @montoGanado_Extras MONEY;
+		DECLARE @montoGanado_ExtrasNormales MONEY;
+		DECLARE @montoGanado_ExtrasDobles MONEY;
 
 		SET @montoGanado_Ordinarias = @jornada_SalarioXHora * @horasNormales;
-		SET @montoGanado_Extras		= @jornada_SalarioXHora * @horasExtras * 1.5;
+		SET @montoGanado_ExtrasNormales = @jornada_SalarioXHora * @horasExtrasNormales * 1.5;
+		SET @montoGanado_ExtrasDobles = @jornada_SalarioXHora * @horasExtrasDobles * 2.0;
 
 		-- > Verificacion si es domingo o feriado
 		IF (EXISTS(SELECT 1 FROM [dbo].[Feriado] F WHERE F.Fecha = @fechaItera) OR @fechaItera = @domingo_SemanaActual)
 		BEGIN
-			SET @montoGanado_Extras	= @jornada_SalarioXHora * @horasExtras * 2.0;
+			SET @montoGanado_ExtrasNormales	= 0;
+			SET @montoGanado_ExtrasDobles	= @jornada_SalarioXHora * (@horasExtrasNormales + @horasExtrasDobles) * 2.0;
 		END
 
 		-- Obtenemos el ID de la SemanaPlanillaXEmpleado para generar el movimiento
@@ -404,7 +418,7 @@ BEGIN
 		--	*	GUARDAMOS LAS HORAS TRABAJADAS POR CADA EMPLEADO EN CADA SEMANA	*
 		--	*****************************************************************************
 		INSERT INTO [dbo].[HorasTrabajadasXEmpleado]([HorasNormales], [HorasExtrasNormales], [HorasExtrasDobles], [Id_Empleado], [Id_SemanaPlanilla])
-			VALUES(@horasNormales, @horasExtras, @horasExtras, @ID_Empleado, @ID_SemanaPlanilla)
+			VALUES(@horasNormales, @horasExtrasNormales, @horasExtrasDobles, @ID_Empleado, @ID_SemanaPlanilla)
 	
 		--	*****************************************************************************
 		--	*	SECCION DONDE SE GENERAN LOS MOVIMIENTOS	*
@@ -414,9 +428,10 @@ BEGIN
 		
 		INSERT INTO [dbo].[MovimientoPlanilla]([Fecha], [Monto], [IdPlanillaSemanaXEmpleado], [IdTipoMovimiento])
 			VALUES(@fechaItera, @montoGanado_Ordinarias, @ID_PlanillaSemanaXEmpleado, 1)
-		-- Insercion de monto extra
 		INSERT INTO [dbo].[MovimientoPlanilla]([Fecha], [Monto], [IdPlanillaSemanaXEmpleado], [IdTipoMovimiento])
-			VALUES(@fechaItera, @montoGanado_Extras, @ID_PlanillaSemanaXEmpleado, 2)
+			VALUES(@fechaItera, @montoGanado_ExtrasNormales, @ID_PlanillaSemanaXEmpleado, 2)
+		INSERT INTO [dbo].[MovimientoPlanilla]([Fecha], [Monto], [IdPlanillaSemanaXEmpleado], [IdTipoMovimiento])
+			VALUES(@fechaItera, @montoGanado_ExtrasDobles, @ID_PlanillaSemanaXEmpleado, 3)
 
 		-- Crear las deducciones necesarias
 		IF (@EsJueves = 1)
