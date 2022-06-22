@@ -11,7 +11,7 @@ const PersonalDB = {
 	user: "mainUser",
     password: "1234",
     server: "LAPTOP-8KE4ISMN",
-    database: "Proyecto4_BasePruebas_A3",
+    database: "Proyecto4_BasePruebas_A8",
     trustServerCertificate: true,
 };
 

@@ -298,8 +298,8 @@ BEGIN
 		DECLARE @IdentidadEmpleado INT;
 		DECLARE @horaEntrada TIME(0);
 		DECLARE @horaSalida  TIME(0);
-		DECLARE @Entrada_Completa DATE;
-		DECLARE @Salida_Completa DATE;
+		DECLARE @Entrada_Completa DATETIME;
+		DECLARE @Salida_Completa DATETIME;
 		DECLARE @ID_Empleado INT;
 
 		SELECT  @horaEntrada = TA.HoraEntrada,
@@ -343,8 +343,8 @@ BEGIN
 			FROM [dbo].[Jornada] J
 			WHERE J.IdEmpleado = @ID_Empleado AND J.IdSemanaPlanilla = @ID_SemanaPlanilla;
 
-		INSERT INTO [dbo].[MarcasAsistencia]([FechaEntrada], [FechaSalida], [ValorDocumentoIdentidad], [IdJornada])
-			VALUES(@Entrada_Completa, @Salida_Completa, @IdentidadEmpleado, @ID_Jornada_Actual);
+		INSERT INTO [dbo].[MarcasAsistencia]([FechaEntrada], [FechaSalida], [IdEmpleado], [IdJornada])
+			VALUES(@Entrada_Completa, @Salida_Completa, @ID_Empleado, @ID_Jornada_Actual);
 		
 
 		--	*****************************************************************************

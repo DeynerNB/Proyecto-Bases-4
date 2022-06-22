@@ -1,4 +1,4 @@
-USE [Proyecto4_BasePruebas_A3]
+USE [Proyecto4_BasePruebas_A7]
 GO
 
 /****** Object:  StoredProcedure [dbo].[SP_LoginUsuario]    Script Date: 6/21/2022 8:29:09 PM ******/

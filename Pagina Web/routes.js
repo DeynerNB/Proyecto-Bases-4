@@ -36,15 +36,54 @@ router.get('/auth', async (req, res) => {
 });
 router.get('/data', async (req, res) => {
 	const pool   = await sqlManager.getConnection();
+	let result;
+
+	let mode = req.query.mode;
+	if (mode == undefined)
+		mode = 'listarPlanillaSemanal';
+
+	if (mode== 'listarPlanillaMensual') {
+		result = await pool
+					.request()
+					.input('in_NombreUsuario', activeUser)
+					.input('in_ContrasenaUsuario', activePass)
+					.output('out_ResultCode', 0)
+					.execute('MostrarPlanillaMensual');
+	}
+	else {
+		result = await pool
+					.request()
+					.input('in_NombreUsuario', activeUser)
+					.input('in_ContrasenaUsuario', activePass)
+					.execute('SP_MostrarPlanillaSemanal');
+	}
+	pool.close();
+	res.json({'mode': mode, 'data': result.recordset});
+});
+router.get('/detailWeekInformation', async(req, res) => {
+	const ID_Week = req.query.IDWeek;
+
+	const pool   = await sqlManager.getConnection();
 	const result = await pool
 							.request()
-							.input('in_NombreUsuario', activeUser)
-							.input('in_ContrasenaUsuario', activePass)
-							.execute('SP_MostrarPlanillaSemanal');
+							.input('in_ID_PlanillaSemanaXEmpleado', ID_Week)
+							.output('outResultCode', 0)
+							.execute('SP_Detalles_Deduccion_Movimientos');
 	pool.close();
+	res.json({'Deducciones': result.recordsets[0], 'Movimientos': result.recordsets[1]});
+})
+router.get('/detailMonthInformation', async(req, res) => {
+	const ID_Month = req.query.IDMonth;
 
-	res.json({'mode':'listarPlanillaSemanal', 'data': result.recordset});
-});
+	const pool   = await sqlManager.getConnection();
+	const result = await pool
+							.request()
+							.input('inID_PlanillaMesXEmpleado', ID_Month)
+							.output('outResultCode', 0)
+							.execute('SP_Detalles_Mensuales');
+	pool.close();
+	res.json({'Deducciones': result.recordset});
+})
 
 
 
